@@ -1,0 +1,29 @@
+<mat-card class="flight-card">
+  <mat-card-title>Voos Disponíveis</mat-card-title>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Lista de voos -->
+  <mat-list *ngIf="!loading && flights.length">
+    <mat-list-item *ngFor="let flight of flights">
+      <div matLine class="flight-info">
+        <strong>{{ flight.origin }}</strong> → <strong>{{ flight.destination }}</strong>
+      </div>
+      <div matLine class="flight-meta">
+        Saída: {{ flight.departureAt | date: 'short' }}<br />
+        Chegada: {{ flight.arrivalAt | date: 'short' }}
+      </div>
+      <div matLine class="flight-price">
+        <span>Preço: {{ flight.price | currency: 'BRL' }}</span>
+      </div>
+    </mat-list-item>
+  </mat-list>
+
+  <!-- Nenhum resultado -->
+  <div *ngIf="!loading && !flights.length" class="no-flights">
+    Nenhum voo disponível.
+  </div>
+</mat-card>

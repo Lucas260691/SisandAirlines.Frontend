@@ -3,7 +3,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  // { path: '', component: HomeComponent }   // exemplo para depois
+  {
+    path: 'flights',
+    loadChildren: () =>
+      import('./features/flights/flights.module').then(m => m.FlightsModule)
+  },
+  { path: '', redirectTo: 'flights', pathMatch: 'full' }
 ];
 
 @NgModule({
