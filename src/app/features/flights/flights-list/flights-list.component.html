@@ -1,29 +1,41 @@
-<mat-card class="flight-card">
-  <mat-card-title>Voos Disponíveis</mat-card-title>
+<div *ngIf="loading" class="loading">
+  <mat-spinner></mat-spinner>
+  <p>Carregando voos disponíveis...</p>
+</div>
 
-  <!-- Loading -->
-  <div *ngIf="loading" class="loading">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+<mat-card *ngFor="let flight of flights" class="flight-card">
+  <mat-card-header>
+    <mat-card-title>{{ flight.origin }} → {{ flight.destination }}</mat-card-title>
+    <mat-card-subtitle>
+      Saída: {{ flight.departureAt | date:'shortTime' }} •
+      Chegada: {{ flight.arrivalAt | date:'shortTime' }}
+    </mat-card-subtitle>
+  </mat-card-header>
 
-  <!-- Lista de voos -->
-  <mat-list *ngIf="!loading && flights.length">
-    <mat-list-item *ngFor="let flight of flights">
-      <div matLine class="flight-info">
-        <strong>{{ flight.origin }}</strong> → <strong>{{ flight.destination }}</strong>
+  <mat-card-content>
+    <div *ngFor="let cls of flight.classes" class="fare-option" [class.unavailable]="!cls.canBook">
+      <div class="fare-info">
+        <strong>
+          {{ cls.fareClass === 'ECONOMY' ? 'Classe Econômica' : 'Primeira Classe' }}
+        </strong>
+        <span> - {{ cls.availableSeats }} assento(s) disponível(eis)</span>
       </div>
-      <div matLine class="flight-meta">
-        Saída: {{ flight.departureAt | date: 'short' }}<br />
-        Chegada: {{ flight.arrivalAt | date: 'short' }}
+      <div class="fare-price">
+        {{ cls.baseFare | currency:'BRL' }}
       </div>
-      <div matLine class="flight-price">
-        <span>Preço: {{ flight.price | currency: 'BRL' }}</span>
-      </div>
-    </mat-list-item>
-  </mat-list>
+    </div>
+  </mat-card-content>
 
-  <!-- Nenhum resultado -->
-  <div *ngIf="!loading && !flights.length" class="no-flights">
-    Nenhum voo disponível.
-  </div>
+  <mat-card-actions align="end">
+    <button
+      mat-stroked-button
+      color="primary"
+      [disabled]="!canSelectFlight(flight)">
+      Selecionar
+    </button>
+  </mat-card-actions>
 </mat-card>
+
+<div *ngIf="!loading && flights.length === 0" class="no-results">
+  Nenhum voo disponível para a data selecionada.
+</div>

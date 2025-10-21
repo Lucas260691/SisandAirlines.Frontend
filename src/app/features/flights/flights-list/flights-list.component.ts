@@ -62,4 +62,7 @@ export class FlightsListComponent implements OnInit {
       }
     });
   }
+   canSelectFlight(flight: Flight): boolean {
+    return flight.classes.some(cls => cls.canBook);
+  }
 }
