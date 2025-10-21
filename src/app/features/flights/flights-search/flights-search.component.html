@@ -1,0 +1,21 @@
+<mat-card class="search-card">
+  <h2>Buscar Voos</h2>
+
+  <form [formGroup]="form" (ngSubmit)="searchFlights()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Data da Viagem</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" [min]="today" [max]="maxDate" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Quantidade de Passageiros</mat-label>
+      <input matInput type="number" formControlName="passengers" />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      Buscar Voos
+    </button>
+  </form>
+</mat-card>
