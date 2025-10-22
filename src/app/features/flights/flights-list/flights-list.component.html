@@ -20,20 +20,22 @@
         </strong>
         <span> - {{ cls.availableSeats }} assento(s) disponível(eis)</span>
       </div>
+
       <div class="fare-price">
         {{ cls.baseFare | currency:'BRL' }}
       </div>
+
+      <!-- ✅ botão de seleção movido para dentro do loop da classe -->
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!cls.canBook"
+        (click)="selectFlight(flight, cls)"
+      >
+        Selecionar
+      </button>
     </div>
   </mat-card-content>
-
-  <mat-card-actions align="end">
-    <button
-      mat-stroked-button
-      color="primary"
-      [disabled]="!canSelectFlight(flight)">
-      Selecionar
-    </button>
-  </mat-card-actions>
 </mat-card>
 
 <div *ngIf="!loading && flights.length === 0" class="no-results">
