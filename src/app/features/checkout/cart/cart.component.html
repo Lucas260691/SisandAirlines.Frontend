@@ -1,0 +1,61 @@
+<mat-card class="cart-container">
+  <h2 class="cart-title">🛒 Carrinho de Compras</h2>
+
+  <div *ngIf="(flights$ | async) as flights">
+    <div *ngIf="flights.length > 0; else emptyCart">
+      <mat-card
+        *ngFor="let flight of flights"
+        class="flight-card"
+        appearance="outlined"
+      >
+        <div class="flight-info">
+          <h3>{{ flight.origin }} → {{ flight.destination }}</h3>
+          <p>
+            ✈️ Saída: {{ flight.departureAt | date: 'shortTime' }} |
+            Chegada: {{ flight.arrivalAt | date: 'shortTime' }}
+          </p>
+          <p>
+            <strong>Classe:</strong> {{ flight.fareClass }}
+          </p>
+          <p>
+            <strong>Passageiros:</strong> {{ flight.passengers }}
+          </p>
+          <p>
+            <strong>Preço Unitário:</strong>
+            {{ flight.price | currency: 'BRL' }}
+          </p>
+          <p>
+            <strong>Total:</strong>
+            {{ flight.price * flight.passengers | currency: 'BRL' }}
+          </p>
+        </div>
+
+        <button
+          mat-stroked-button
+          color="warn"
+          (click)="removeFlight(flight.flightId)"
+        >
+          Remover
+        </button>
+      </mat-card>
+
+      <div class="cart-total">
+        <p>
+          💰 Total:
+          <strong>{{ total | currency: 'BRL' }}</strong>
+        </p>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="proceedToPayment()"
+        >
+          Finalizar Compra
+        </button>
+      </div>
+    </div>
+
+    <ng-template #emptyCart>
+      <p class="empty-cart">Seu carrinho está vazio 💤</p>
+    </ng-template>
+  </div>
+</mat-card>

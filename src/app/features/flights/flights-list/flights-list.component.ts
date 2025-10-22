@@ -3,9 +3,11 @@ import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FlightService } from '../../../core/services/flight.service';
-import { Flight } from '../../../core/models/flight.interface';
+import { CartService } from '../../../core/services/cart.service';
+import { Flight, FareClass } from '../../../core/models/flight.interface';
 
 @Component({
   selector: 'app-flights-list',
@@ -15,6 +17,7 @@ import { Flight } from '../../../core/models/flight.interface';
     MatCardModule,
     MatListModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
     DatePipe,
     CurrencyPipe
   ],
@@ -29,7 +32,9 @@ export class FlightsListComponent implements OnInit {
 
   constructor(
     private readonly flightService: FlightService,
-    private readonly route: ActivatedRoute
+    private readonly cartService: CartService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +67,31 @@ export class FlightsListComponent implements OnInit {
       }
     });
   }
-   canSelectFlight(flight: Flight): boolean {
+
+  canSelectFlight(flight: Flight): boolean {
     return flight.classes.some(cls => cls.canBook);
+  }
+
+  selectFlight(flight: Flight, fareClass: FareClass): void {
+    if (!fareClass.canBook) {
+      console.warn('⚠️ Classe selecionada indisponível:', fareClass.fareClass);
+      return;
+    }
+
+    const cartItem = {
+      flightId: flight.id,
+      origin: flight.origin,
+      destination: flight.destination,
+      departureAt: flight.departureAt,
+      arrivalAt: flight.arrivalAt,
+      fareClass: fareClass.fareClass,
+      price: fareClass.baseFare,
+      passengers: this.passengers
+    };
+
+    this.cartService.addFlight(cartItem);
+    console.log('🛒 Adicionado ao carrinho:', cartItem);
+
+    this.router.navigate(['/checkout/cart']);
   }
 }
