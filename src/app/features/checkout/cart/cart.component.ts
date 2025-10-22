@@ -27,7 +27,6 @@ export class CartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ✅ Corrigido: o observable agora é de CartItem[]
     this.flights$ = this.cartService.flights$;
   }
 
@@ -35,7 +34,11 @@ export class CartComponent implements OnInit {
     this.cartService.removeFlight(id);
   }
 
-  goToCheckout(): void {
+  proceedToPayment(): void {
+    if (this.cartService.getTotal() === 0) {
+      return;
+    }
+
     this.router.navigate(['/checkout/payment']);
   }
 

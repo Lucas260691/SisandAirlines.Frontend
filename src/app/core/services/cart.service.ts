@@ -4,47 +4,45 @@ import { CartItem } from '../models/cart.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  // Estado interno do carrinho
-  private readonly cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
+  private readonly STORAGE_KEY = 'sisand_airlines_cart';
+  private readonly cartItemsSubject = new BehaviorSubject<CartItem[]>(this.loadFromStorage());
   readonly flights$ = this.cartItemsSubject.asObservable();
 
-  /**
-   * Adiciona um voo ao carrinho.
-   */
+  private saveToStorage(items: CartItem[]): void {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+  }
+
+  private loadFromStorage(): CartItem[] {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
   addFlight(item: CartItem): void {
     const current = this.cartItemsSubject.getValue();
-    this.cartItemsSubject.next([...current, item]);
-  }
-
-  /**
-   * Remove um voo do carrinho com base no ID do voo.
-   */
-  removeFlight(flightId: number): void {
-    const updated = this.cartItemsSubject
-      .getValue()
-      .filter(f => f.flightId !== flightId);
+    const updated = [...current, item];
     this.cartItemsSubject.next(updated);
+    this.saveToStorage(updated);
   }
 
-  /**
-   * Limpa completamente o carrinho.
-   */
+  removeFlight(flightId: number): void {
+    const updated = this.cartItemsSubject.getValue().filter(f => f.flightId !== flightId);
+    this.cartItemsSubject.next(updated);
+    this.saveToStorage(updated);
+  }
+
   clearCart(): void {
     this.cartItemsSubject.next([]);
+    localStorage.removeItem(this.STORAGE_KEY);
   }
 
-  /**
-   * Calcula o total acumulado do carrinho.
-   */
   getTotal(): number {
-    return this.cartItemsSubject.getValue().reduce((acc, item) => {
-      return acc + item.price * item.passengers;
-    }, 0);
+    return this.cartItemsSubject.getValue().reduce((acc, item) => acc + item.price * item.passengers, 0);
   }
 
-  /**
-   * Retorna a lista atual de itens no carrinho.
-   */
   getCartItems(): CartItem[] {
     return this.cartItemsSubject.getValue();
   }

@@ -1,0 +1,71 @@
+<mat-card class="payment-card">
+  <mat-card-header>
+    <mat-card-title>Pagamento via Pix</mat-card-title>
+    <mat-card-subtitle>Confira seu pedido e finalize com Pix</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <section class="resume">
+      <h3>Resumo do pedido</h3>
+      <mat-list *ngIf="itemsSig().length; else empty">
+        <mat-list-item *ngFor="let item of itemsSig(); trackBy: trackById">
+          <div matListItemTitle>
+            {{ item.origin }} → {{ item.destination }} • {{ item.fareClass }}
+          </div>
+          <div matListItemLine>
+            Saída: {{ item.departureAt | date:'short' }} • Chegada: {{ item.arrivalAt | date:'short' }}
+          </div>
+          <div class="right">
+            {{ item.passengers }}× {{ item.price | currency:'BRL':'symbol-narrow':'1.2-2' }}
+          </div>
+        </mat-list-item>
+      </mat-list>
+
+      <ng-template #empty>
+        <div class="empty">
+          <mat-icon>shopping_cart</mat-icon>
+          Seu carrinho está vazio.
+        </div>
+      </ng-template>
+
+      <mat-divider class="spacer"></mat-divider>
+
+      <div class="total-row" *ngIf="itemsSig().length">
+        <span>Total</span>
+        <strong>{{ totalSig() | currency:'BRL':'symbol-narrow':'1.2-2' }}</strong>
+      </div>
+    </section>
+
+    <section class="pix" *ngIf="itemsSig().length">
+      <h3>Pix</h3>
+
+      <div class="qr-wrapper" *ngIf="!loadingQr(); else loading">
+        <img
+          *ngIf="qrDataUrlSig()"
+          class="qr"
+          [src]="qrDataUrlSig()"
+          alt="QR Code Pix" />
+        <pre class="payload" title="Payload Pix para copiar/colar">{{ pixPayloadSig() }}</pre>
+      </div>
+
+      <ng-template #loading>
+        <div class="loading">
+          <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+          <span>Gerando QR Code…</span>
+        </div>
+      </ng-template>
+    </section>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-stroked-button color="primary" (click)="cancel()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar ao carrinho
+    </button>
+
+    <button mat-flat-button color="accent" (click)="confirmPayment()" [disabled]="!itemsSig().length">
+      <mat-icon>done_all</mat-icon>
+      Confirmar Pagamento
+    </button>
+  </mat-card-actions>
+</mat-card>
