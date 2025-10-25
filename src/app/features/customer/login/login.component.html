@@ -1,0 +1,35 @@
+<mat-card class="auth-card">
+  <h2 class="auth-title">Acessar Conta</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" type="email" required />
+      <mat-error *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+        Informe um e-mail válido.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Senha</mat-label>
+      <input matInput formControlName="password" type="password" required />
+      <mat-error *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+        Informe sua senha.
+      </mat-error>
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      color="primary"
+      class="full-width"
+      [disabled]="loading || form.invalid"
+      type="submit"
+    >
+      {{ loading ? 'Entrando...' : 'Entrar' }}
+    </button>
+
+    <div class="auth-footer">
+      <span>Não possui conta?</span>
+      <a routerLink="/customer/register">Cadastre-se</a>
+    </div>
+  </form>
+</mat-card>

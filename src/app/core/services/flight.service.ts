@@ -5,7 +5,7 @@ import { Flight } from '../models/flight.interface';
 
 @Injectable({ providedIn: 'root' })
 export class FlightService {
-  private readonly endpoint = 'Flights';
+  private readonly endpoint = 'flights';
 
   constructor(private api: ApiService) {}
 

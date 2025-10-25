@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -17,9 +18,17 @@ export const routes: Routes = [
       import('./features/checkout/cart/cart.component').then(m => m.CartComponent)
   },
   {
+    path: 'customer/register',
+    loadComponent: () => import('./features/customer/register/register.component').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'customer/login',
+    loadComponent: () => import('./features/customer/login/login.component').then(m => m.LoginComponent)
+  },
+  {
     path: 'checkout/payment',
-    loadComponent: () =>
-      import('./features/checkout/payment/payment.component').then(m => m.PaymentComponent)
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/checkout/payment/payment.component').then(m => m.PaymentComponent)
   },
   {
     path: 'checkout/success',
