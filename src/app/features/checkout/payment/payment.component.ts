@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +16,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import * as QRCode from 'qrcode';
 import { CartService } from '../../../core/services/cart.service';
+import { CustomerService } from '../../../core/services/customer.service';
 
 export interface CartItem {
   flightId: number;
@@ -34,17 +41,17 @@ export interface CartItem {
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentComponent {
   private readonly cartService = inject(CartService);
+  private readonly customerService = inject(CustomerService);
   private readonly router = inject(Router);
   private readonly snack = inject(MatSnackBar);
-
 
   itemsSig = signal<CartItem[]>([]);
   loadingQr = signal(true);
@@ -57,38 +64,35 @@ export class PaymentComponent {
   qrDataUrlSig = signal<string>('');
 
   constructor() {
-
-    const sub = (this.cartService as any).flights$.subscribe?.((items: CartItem[]) => {
-      this.itemsSig.set(items ?? []);
-      this.generatePixQr();
-    });
-
-    // limpa subscription quando o componente sair (Angular signals não têm ngOnDestroy automático)
-    // Como o comp é standalone simples, deixamos assim; caso use @DestroyRef, ajuste.
+    const sub = (this.cartService as any).flights$?.subscribe?.(
+      (items: CartItem[]) => {
+        this.itemsSig.set(items ?? []);
+        this.generatePixQr();
+      }
+    );
     // @ts-ignore
     this._sub = sub;
-
     this.generatePixQr();
   }
 
   private buildFakePixPayload(amount: number): string {
-
-    const txid = 'SISAND-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const txid =
+      'SISAND-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     const merchant = 'Sisand Airlines';
     const city = 'CURITIBA';
-
     const value = amount.toFixed(2);
+
     return [
-      `000201`,                    // cabeçalho fictício
-      `26SISANDPIXKEY:00000000`,  // chave fake
-      `52040000`,                 // merchant category code fake
-      `5303986`,                  // moeda BRL (986)
-      `540${value}`,              // valor
-      `5802BR`,                   // país
-      `59${merchant}`,            // nome recebedor
-      `60${city}`,                // cidade
-      `62TXID:${txid}`,           // txid
-      `6307ABCD`                  // CRC fake
+      `000201`,
+      `26SISANDPIXKEY:00000000`,
+      `52040000`,
+      `5303986`,
+      `540${value}`,
+      `5802BR`,
+      `59${merchant}`,
+      `60${city}`,
+      `62TXID:${txid}`,
+      `6307ABCD`,
     ].join('|');
   }
 
@@ -108,7 +112,7 @@ export class PaymentComponent {
     try {
       const dataUrl = await QRCode.toDataURL(payload, {
         margin: 1,
-        scale: 6
+        scale: 6,
       });
       this.qrDataUrlSig.set(dataUrl);
     } catch (err) {
@@ -126,18 +130,23 @@ export class PaymentComponent {
       return;
     }
 
-    this.snack.open('Pagamento confirmado! Obrigado por voar com a Sisand Airlines ✈️', 'Fechar', {
-      duration: 2600
-    });
+    this.snack.open(
+      'Pagamento confirmado! Obrigado por voar com a Sisand Airlines ✈️',
+      'Fechar',
+      { duration: 2600 }
+    );
 
-    this.cartService.clearCart();
-    this.router.navigate(['/checkout/success']);
+    setTimeout(() => {
+      this.cartService.clearCart();
+      this.customerService.logout();
+      this.router.navigate(['/customer/login']);
+    }, 2600);
   }
 
   cancel() {
     this.router.navigate(['/checkout/cart']);
   }
 
-  trackById = (_: number, it: CartItem) => `${it.flightId}-${it.fareClass}-${it.departureAt}`;
-
+  trackById = (_: number, it: CartItem) =>
+    `${it.flightId}-${it.fareClass}-${it.departureAt}`;
 }

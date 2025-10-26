@@ -8,23 +8,21 @@ import { Customer } from '../models/customer.interface';
 export class CustomerService {
   private readonly TOKEN_KEY = 'sisand_jwt';
   private readonly USER_KEY = 'sisand_user';
+  private readonly EXPIRATION_KEY = 'sisand_expiration';
 
   private userSubject = new BehaviorSubject<Customer | null>(this.loadUser());
   user$ = this.userSubject.asObservable();
 
   constructor(private auth: AuthService) {}
 
-  // ✅ Login de usuário já cadastrado
   login(credentials: LoginRequest) {
     return this.auth.login(credentials);
   }
 
-  // ✅ Registro de novo usuário (usado na tela de cadastro)
   register(customer: Customer) {
     return this.auth.register(customer);
   }
 
-  // ✅ Salva token e informações básicas no localStorage
   saveSession(response: SlimLoginResponse): void {
     localStorage.setItem(this.TOKEN_KEY, response.token);
 
@@ -35,32 +33,44 @@ export class CustomerService {
 
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     this.userSubject.next(user as Customer);
+
+    this.refreshSession();
   }
 
-  // ✅ Remove sessão (logout)
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.EXPIRATION_KEY);
     this.userSubject.next(null);
   }
 
-  // ✅ Retorna token
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  // ✅ Retorna usuário atual
   getUser(): Customer | null {
     return this.userSubject.value;
   }
 
-  // ✅ Verifica se há um token válido
   isAuthenticated(): boolean {
     const token = this.getToken();
-    return !!token && token.length > 10; // validação simples
+    const expired = this.isSessionExpired();
+    return !!token && token.length > 10 && !expired;
   }
 
-  // 🔹 Carrega usuário do localStorage (inicialização)
+  refreshSession(): void {
+    const token = this.getToken();
+    if (!token) return;
+    const expiration = Date.now() + 30 * 60 * 1000; // 30 minutos
+    localStorage.setItem(this.EXPIRATION_KEY, expiration.toString());
+  }
+
+  isSessionExpired(): boolean {
+    const exp = localStorage.getItem(this.EXPIRATION_KEY);
+    if (!exp) return true;
+    return Date.now() > parseInt(exp, 10);
+  }
+
   private loadUser(): Customer | null {
     const raw = localStorage.getItem(this.USER_KEY);
     return raw ? JSON.parse(raw) : null;
